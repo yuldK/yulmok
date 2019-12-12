@@ -1,4 +1,5 @@
 set(target main)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 make_executable(${target} "CONSOLE")
 
@@ -20,6 +21,7 @@ add_sources(${target}
 )
 
 add_and_link_dependency(${target} common)
+add_and_link_dependency(${target} omok)
 
 target_link_libraries(${target}
 	PUBLIC
