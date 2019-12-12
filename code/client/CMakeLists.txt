@@ -10,6 +10,12 @@ add_sources(${target}
 )
 
 add_sources(${target}
+	"Framework"
+	"Framework.cpp"
+	"Framework.h"
+)
+
+add_sources(${target}
 	"Header Files"
 )
 
