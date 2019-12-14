@@ -1,10 +1,17 @@
-#include "pch.h"
+Ôªø#include "pch.h"
 #include <conio.h>
+
+#include <string>
+#include <algorithm>
+
+#include "common/console_util.h"
+
 #include "framework.h"
 
 framework::framework()
+	: stage{}
+	, player{}
 {
-
 }
 
 framework::~framework()
@@ -14,6 +21,12 @@ framework::~framework()
 
 bool framework::initialize()
 {
+	std::wcout.imbue(std::locale("ko"));
+
+	stage.initialize();
+	player[0] = std::make_unique<omok::player>(omok::state::black);
+	player[1] = std::make_unique<omok::player>(omok::state::white);
+
 	return true;
 }
 
@@ -25,20 +38,20 @@ bool framework::input()
 
 	switch (int key = tolower(_getch()))
 	{
-	// πÊ«‚ ≈∞¿« √≥∏Æ
+	// Î∞©Ìñ• ÌÇ§Ïùò Ï≤òÎ¶¨
 	case 0:
 	case 224:
 		process_arrow_key();
 		break;
 
-	// ¿‘∑¬ ≈∞¿« √≥∏Æ
+	// ÏûÖÎ†• ÌÇ§Ïùò Ï≤òÎ¶¨
 	case 13:
 	case 32:
 	case 'x':
 		process_enter_key();
 		break;
 
-	// √Îº“ ≈∞¿« √≥∏Æ
+	// Ï∑®ÏÜå ÌÇ§Ïùò Ï≤òÎ¶¨
 	case 27:
 	case 'c':
 		process_cancel_key();
@@ -48,7 +61,7 @@ bool framework::input()
 		return false;
 		break;
 	default:
-		std::cout << key << std::endl;
+//		std::cout << key << std::endl;
 		break;
 	}
 
@@ -60,26 +73,41 @@ void framework::process_arrow_key()
 	using std::cout;
 	using std::endl;
 
-	switch (_getch())
+	auto& x = currentPos.x;
+	auto& y = currentPos.y;
+
+	int key = _getch();
+
+//	if (!player[0]->is_turn(get_player_turn()))
+//		return;
+
+	switch (key)
 	{
-	case 72:	// °Ë
-		cout << "°Ë" << endl;
+	case 72:	// ‚Üë
+		y--;
 		break;
-	case 75:	// °Á
-		cout << "°Á" << endl;
+	case 75:	// ‚Üê
+		x--;
 		break;
-	case 77:	// °Ê
-		cout << "°Ê" << endl;
+	case 77:	// ‚Üí
+		x++;
 		break;
-	case 80:	// °È
-		cout << "°È" << endl;
+	case 80:	// ‚Üì
+		y++;
 		break;
 	}
+
+	using type = omok::coord_type;
+	x = std::min<type>(omok::omok_width - 1, std::max<type>(0, x));
+	y = std::min<type>(omok::omok_height - 1, std::max<type>(0, y));
 }
 
 void framework::process_enter_key()
 {
 	state = key_state_t::enter;
+
+	stage.put(get_player_turn(), currentPos);
+	turn++;
 }
 
 void framework::process_cancel_key()
@@ -94,8 +122,77 @@ void framework::process_exit_key()
 
 void framework::update()
 {
+	system("cls");
 }
 
 void framework::draw()
 {
+	using std::wcout;
+	using std::endl;
+
+	static constexpr auto right = omok::omok_width - 1;
+	static constexpr auto bottom = omok::omok_height - 1;
+
+	std::wstring buffer;
+
+	auto drawBoard = [this](omok::coord_type x, omok::coord_type y)
+	{
+		switch (stage[x, y])
+		{
+		case omok::state::space:
+			switch (y)
+			{
+			case 0:
+				switch (x)
+				{
+				case 0:		return L"‚îå";
+				case right:	return L"‚îê";
+				default:	return L"‚î¨";
+				}
+				break;
+
+			case bottom:
+				switch (x)
+				{
+				case 0:		return L"‚îî";
+				case right:	return L"‚îò";
+				default:	return L"‚î¥";
+				}
+				break;
+
+			default:
+				switch (x)
+				{
+				case 0:		return L"‚îú";
+				case right:	return L"‚î§";
+				default:	return L"‚îº";
+				}
+			}
+			break;
+
+		case omok::state::white:
+			return L"‚óã";
+
+		case omok::state::black:
+			return L"‚óè";
+		}
+		return L"";
+	};
+
+	for (uint8_t y = 0; y < omok::omok_height; ++y)
+	{
+		buffer += L"\t";
+		for (uint8_t x = 0; x < omok::omok_width; ++x)
+		{
+			if (currentPos == omok::coord{ x, y })
+				buffer += L"‚Äª";
+			else
+				buffer += drawBoard(x, y);
+			buffer += L" ";
+		}
+		buffer += L"\n";
+	}
+
+	wcout << buffer << endl;
+	wcout.flush();
 }

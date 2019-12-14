@@ -1,4 +1,6 @@
 #pragma once
+#include <memory>
+#include <omok/player.h>
 
 enum class key_state_t
 {
@@ -26,6 +28,14 @@ public:
 	void update();
 	void draw();
 
+public:
+	omok::state get_player_turn() const { return turn & 1 ? omok::state::black : omok::state::white; }
 private:
 	key_state_t state = key_state_t::none;
+
+	omok::coord currentPos{};
+	omok::board stage;
+
+	std::unique_ptr<omok::player> player[2];
+	uint8_t turn = 0;
 };

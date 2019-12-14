@@ -10,11 +10,11 @@ int main()
 {
 	if (!g_framework.initialize()) return -1;
 
-	while (g_framework.input())
+	do
 	{
 		g_framework.update();
 		g_framework.draw();
-	}
+	} while (g_framework.input());
 	
 	return 0;
 }

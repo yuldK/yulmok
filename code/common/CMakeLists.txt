@@ -11,4 +11,7 @@ add_sources(${target}
 add_sources(${target}
     "Header Files"
 	"common.h"
+	"group.h"
+	"console_util.h"
+	"dimension_coord.h"
 )
