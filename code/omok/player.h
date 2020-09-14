@@ -8,7 +8,7 @@ namespace omok
     constexpr inline int8_t omok_width = 15;
     constexpr inline int8_t omok_height = 15;
 
-    using coord_type = ::coord::type<uint8_t>;
+    using coord_type = ::coord::type<int8_t>;
     struct coord : ::coord::dimension_coord<coord_type::value_type>
     {
         using value_type = coord_type::value_type;
@@ -22,6 +22,13 @@ namespace omok
         }
         value_type& x;
         value_type& y;
+
+        coord& operator=(const coord& rhs)
+        {
+            x = rhs.x;
+            y = rhs.y;
+            return *this;
+        }
 
         bool operator==(const coord& rhs) const
         {

@@ -19,6 +19,7 @@ public:
 
 	bool initialize();
 	
+	bool exit() const;
 	bool input();
 	void process_arrow_key();
 	void process_enter_key();
@@ -26,16 +27,23 @@ public:
 	void process_exit_key();
 
 	void update();
-	void draw();
+	void draw(bool isFullDraw = false);
+	void draw(omok::coord pos);
+	wchar_t getObjectIcon(omok::coord pos);
 
 public:
 	omok::state get_player_turn() const { return turn & 1 ? omok::state::black : omok::state::white; }
+
 private:
 	key_state_t state = key_state_t::none;
 
+	omok::coord drawStartPos{ 1, 1 };
+	omok::coord prevPos{};
 	omok::coord currentPos{};
 	omok::board stage;
 
 	std::unique_ptr<omok::player> player[2];
 	uint8_t turn = 0;
+
+	bool quit = false;
 };

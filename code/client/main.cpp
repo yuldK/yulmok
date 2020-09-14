@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "framework.h"
+#include "common/console_util.h"
 
 namespace 
 {
@@ -10,11 +11,18 @@ int main()
 {
 	if (!g_framework.initialize()) return -1;
 
-	do
+	while (g_framework.exit() == false)
 	{
-		g_framework.update();
-		g_framework.draw();
-	} while (g_framework.input());
+		if (g_framework.input())
+		{
+			g_framework.update();
+			g_framework.draw();
+
+			continue;
+		}
+
+		Sleep(10);
+	}
 	
 	return 0;
 }
