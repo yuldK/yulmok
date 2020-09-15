@@ -1,5 +1,6 @@
 ﻿#include "pch.h"
 #include <conio.h>
+#include <iomanip>
 
 #include <string>
 #include <algorithm>
@@ -9,7 +10,7 @@
 #include "framework.h"
 
 framework::framework()
-	: stage{}
+	: board{}
 	, player{}
 {
 }
@@ -25,18 +26,22 @@ bool framework::initialize()
 	{
 		using namespace console_util;
 
-		SetHideCursor(true);
-		setbufferxy(omok::omok_width * 2 + 2, omok::omok_height + 8);
-		removescrollbar();
-		SetFont(16, L"consolas");
+		set_hide_cursor(true);
+		set_font(16, L"consolas");
+
+		set_buffer_xy(
+			  (draw_start_pos.x + omok::omok_width) * 2
+			, (draw_start_pos.y + omok::omok_height) + 8
+		);
 	}
 
-	stage.initialize();
+	board.initialize();
+
 	player[0] = std::make_unique<omok::player>(omok::state::black);
 	player[1] = std::make_unique<omok::player>(omok::state::white);
 
-	currentPos.x = omok::omok_width / 2;
-	currentPos.y = omok::omok_height / 2;
+	current_pos.x = omok::omok_width / 2;
+	current_pos.y = omok::omok_height / 2;
 
 	update();
 	draw(true);
@@ -44,19 +49,19 @@ bool framework::initialize()
 	return true;
 }
 
-bool framework::exit() const
+bool framework::check_exit() const
 {
-	return quit;
+	return exit;
 }
 
 bool framework::input()
 {
-	state = key_state_t::none;
+	key_state = key_state_t::none;
 
-	if (_kbhit() == false)
+	if (::_kbhit() == false)
 		return false;
 
-	switch (int key = tolower(_getwch()))
+	switch (int key = ::tolower(::_getch()))
 	{
 		// 방향 키의 처리
 	case 0:
@@ -72,16 +77,21 @@ bool framework::input()
 		break;
 
 		// 취소 키의 처리
-	case 27:
+	case 'u':
 	case 'c':
 		process_cancel_key();
 		break;
 
+	case 'r':
+		process_redo_key();
+		break;
+
+	case 27:
 	case 'q':
-		quit = true;
+		process_exit_key();
 		break;
 	default:
-		std::cout << key << std::endl;
+//		std::cout << key << std::endl;
 		break;
 	}
 
@@ -93,12 +103,12 @@ void framework::process_arrow_key()
 	using std::cout;
 	using std::endl;
 
-	prevPos = currentPos;
+	prev_pos = current_pos;
 
-	auto& x = currentPos.x;
-	auto& y = currentPos.y;
+	auto& x = current_pos.x;
+	auto& y = current_pos.y;
 
-	wint_t key = _getwch();
+	int key = _getch();
 
 //	if (!player[0]->is_turn(get_player_turn()))
 //		return;
@@ -126,21 +136,72 @@ void framework::process_arrow_key()
 
 void framework::process_enter_key()
 {
-	state = key_state_t::enter;
+	key_state = key_state_t::enter;
 
-	stage.put(get_player_turn(), currentPos);
+	auto state = get_player_turn();
+
+	prev_pos = current_pos;
+
+	if (board.put(state, current_pos) == false)
+		return;
+
+	player[0]->get(state, current_pos);
+	player[1]->get(state, current_pos);
+
+	history.push(current_pos);
+	undo_stack = decltype(undo_stack){};
 
 	turn++;
 }
 
 void framework::process_cancel_key()
 {
-	state = key_state_t::cancel;
+	key_state = key_state_t::cancel;
+
+	if (history.empty()) return;
+
+	auto pos = history.top();
+	history.pop();
+	undo_stack.push(pos);
+
+	prev_pos = current_pos;
+	current_pos = pos;
+
+	board.undo(current_pos);
+
+	player[0]->get(omok::state::space, current_pos);
+	player[1]->get(omok::state::space, current_pos);
+
+	turn--;
+}
+
+void framework::process_redo_key()
+{
+	key_state = key_state_t::cancel;
+
+	if (undo_stack.empty()) return;
+
+	auto pos = undo_stack.top();
+	undo_stack.pop();
+	history.push(pos);
+
+	auto state = get_player_turn();
+
+	prev_pos = current_pos;
+	current_pos = pos;
+
+	board.put(state, current_pos);
+
+	player[0]->get(state, current_pos);
+	player[1]->get(state, current_pos);
+
+	turn++;
 }
 
 void framework::process_exit_key()
 {
-	state = key_state_t::exit;
+	key_state = key_state_t::exit;
+	exit = true;
 }
 
 void framework::update()
@@ -149,68 +210,96 @@ void framework::update()
 //	console_util::gotoxy(0, 0);
 }
 
-void framework::draw(bool isFullDraw)
+void framework::draw(bool draw_all, bool redraw) const
 {
 	using std::wcout;
 	using std::endl;
 
-	if (isFullDraw)
-	{
-		console_util::gotoxy(0, 0);
+	draw_info();
 
-		for (omok::coord_type i = 0; i < drawStartPos.y; ++i)
-			wcout << '\n';
-
-		for (omok::coord_type y = 0; y < omok::omok_height; ++y)
-		{
-			for (omok::coord_type i = 0; i < drawStartPos.x; ++i)
-				wcout << L' ';
-			for (omok::coord_type x = 0; x < omok::omok_width; ++x)
-			{
-				draw(omok::coord{ x, y });
-			}
-			wcout << L'\n';
-		}
-	}
-	else
+	if (draw_all == false)
 	{
-		draw(prevPos);
-		draw(currentPos);
+		draw(prev_pos);
+		draw(current_pos);
+
+		return;
 	}
+
+	if (redraw)
+		system("cls");
+
+	for (omok::coord_type y = 0; y < omok::omok_height; ++y)
+		for (omok::coord_type x = 0; x < omok::omok_width; ++x)
+			draw(omok::coord{ x, y });
+
+	draw_help();
 }
 
-void framework::draw(omok::coord pos)
+void framework::draw_info() const
 {
-	console_util::gotoxy(drawStartPos.x + pos.x * 2, drawStartPos.y + pos.y);
+	console_util::gotoxy(10, 0);
+	std::wcout << L"< turn " << std::setw(2) << turn + 1 << L" >    \n";
 
-	if (pos != currentPos)
-		console_util::SetTextColor(TEXTCOLOR_ORIGIN);
-	else if (stage[pos] == omok::player_state)
-		console_util::SetTextColor(TEXTCOLOR_RED);
-	else
-		console_util::SetTextColor(TEXTCOLOR_ORIGIN);
-
-	std::wcout << getObjectIcon(pos);
-
-	console_util::SetTextColor(TEXTCOLOR_WHITE);
+//	console_util::gotoxy(0, draw_start_pos.y + omok::omok_height);
 }
 
-wchar_t framework::getObjectIcon(omok::coord pos)
+void framework::draw_help() const
 {
+	console_util::gotoxy(0, draw_start_pos.y + omok::omok_height + 2);
+
+	std::wcout << L" ==============================\n";
+	std::wcout << L" put	| x space enter\n";
+	std::wcout << L" quit	| q esc\n";
+	std::wcout << L" undo	| c u\n";
+	std::wcout << L" redo	| r";
+}
+
+void framework::draw(omok::coord pos) const
+{
+	using namespace console_util;
+	gotoxy(draw_start_pos.x + pos.x * 2, draw_start_pos.y + pos.y);
+
+	set_text_color(TEXTCOLOR_ORIGIN);
+
+	if (pos == current_pos && board[pos] == omok::player_state)
+		set_text_color(TEXTCOLOR_RED);
+
+	std::wcout << get_object_icon(pos);
+
+	if (board[pos] == omok::state::space)
+		std::wcout << L' ';
+
+	set_text_color(TEXTCOLOR_WHITE);
+}
+
+wchar_t framework::draw_board(omok::coord pos) const
+{
+	return get_object_icon(pos, omok::state::space);
+}
+
+wchar_t framework::get_object_icon(omok::coord pos) const
+{
+	return get_object_icon(pos, board[pos]);
+}
+
+wchar_t framework::get_object_icon(omok::coord pos, omok::state state) const
+{
+	static constexpr auto left = 0;
 	static constexpr auto right = omok::omok_width - 1;
+	static constexpr auto top = 0;
 	static constexpr auto bottom = omok::omok_height - 1;
 
-	bool isFocus = pos == currentPos;
+	bool isFocus = pos == current_pos;
 
-	switch (stage[pos])
+	switch (state)
 	{
 	case omok::state::space:
 		switch (pos.y)
 		{
-		case 0:
+		case top:
 			switch (pos.x)
 			{
-			case 0:		return isFocus ? L'┏' : L'┌';
+			case left:	return isFocus ? L'┏' : L'┌';
 			case right:	return isFocus ? L'┓' : L'┐';
 			default:	return isFocus ? L'┳' : L'┬';
 			}
@@ -219,7 +308,7 @@ wchar_t framework::getObjectIcon(omok::coord pos)
 		case bottom:
 			switch (pos.x)
 			{
-			case 0:		return isFocus ? L'┗' : L'└';
+			case left:	return isFocus ? L'┗' : L'└';
 			case right:	return isFocus ? L'┛' : L'┘';
 			default:	return isFocus ? L'┻' : L'┴';
 			}
@@ -228,7 +317,7 @@ wchar_t framework::getObjectIcon(omok::coord pos)
 		default:
 			switch (pos.x)
 			{
-			case 0:		return isFocus ? L'┣' : L'├';
+			case left:	return isFocus ? L'┣' : L'├';
 			case right:	return isFocus ? L'┫' : L'┤';
 			default:	return isFocus ? L'╋' : L'┼';
 			}
@@ -236,10 +325,10 @@ wchar_t framework::getObjectIcon(omok::coord pos)
 		break;
 
 	case omok::state::white:
-		return isFocus ? L'◇' : L'○';
+		return isFocus ? L'◆' : L'●';
 
 	case omok::state::black:
-		return isFocus ? L'◆' : L'●';
+		return isFocus ? L'◇' : L'○';
 	}
-	return L'\x0';
+	return L'\0';
 }

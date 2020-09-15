@@ -14,7 +14,10 @@ namespace omok
 
     void player::get(state player_type, coord coord)
     {
-        my_board.put(player_type, coord);
+        if (player_type == state::space)
+            my_board.undo(coord);
+        else
+            my_board.put(player_type, coord);
     }
 
 }
