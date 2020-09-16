@@ -1,7 +1,8 @@
 #pragma once
 #include <cstdint>
 #include "coord.h"
-#include "common/group.h"
+#include <common/group.h>
+#include <common/bit_op.h>
 
 namespace omok
 {
@@ -76,3 +77,5 @@ namespace omok
 		width_type value[omok_height];
 	};
 }
+
+use_bit_op(omok::state);

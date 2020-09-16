@@ -9,6 +9,8 @@
 
 #include "framework.h"
 
+#include "omok/rule.h"
+
 framework::framework()
 	: board{}
 	, player{}
@@ -44,14 +46,27 @@ bool framework::initialize()
 	current_pos.y = omok::omok_height / 2;
 
 	update();
-	draw(true);
+	draw(true, true);
 
 	return true;
 }
 
 bool framework::check_exit() const
 {
-	return exit;
+	if (exit)
+	{
+		console_util::gotoxy(0, draw_start_pos.y + omok::omok_height + 3);
+		Sleep(10);
+		return true;
+	}
+
+	return false;
+}
+
+bool framework::check_game_end() const
+{
+
+	return false;
 }
 
 bool framework::input()
@@ -151,6 +166,12 @@ void framework::process_enter_key()
 	history.push(current_pos);
 	undo_stack = decltype(undo_stack){};
 
+	if (omok::rule::check::win(board, state))
+	{
+		winner = state;
+		return;
+	}
+
 	turn++;
 }
 
@@ -206,14 +227,17 @@ void framework::process_exit_key()
 
 void framework::update()
 {
-//	system("cls");
-//	console_util::gotoxy(0, 0);
+	if (winner != omok::state::unknowun)
+		exit = true;
 }
 
 void framework::draw(bool draw_all, bool redraw) const
 {
 	using std::wcout;
 	using std::endl;
+
+	if (redraw)
+		system("cls");
 
 	draw_info();
 
@@ -224,9 +248,6 @@ void framework::draw(bool draw_all, bool redraw) const
 
 		return;
 	}
-
-	if (redraw)
-		system("cls");
 
 	for (omok::coord_type y = 0; y < omok::omok_height; ++y)
 		for (omok::coord_type x = 0; x < omok::omok_width; ++x)
@@ -240,7 +261,23 @@ void framework::draw_info() const
 	console_util::gotoxy(10, 0);
 	std::wcout << L"< turn " << std::setw(2) << turn + 1 << L" >    \n";
 
-//	console_util::gotoxy(0, draw_start_pos.y + omok::omok_height);
+	console_util::gotoxy(0, draw_start_pos.y + omok::omok_height);
+
+
+	if (winner != omok::state::unknowun)
+	{
+		constexpr wchar_t* state_word[2]
+		{
+			  L"백돌"
+			, L"흑돌"
+		};
+		std::wcout << L" " << state_word[winner == omok::state::white ? 0 : 1] << L"의 승리!                  \n";
+
+		return;
+	}
+
+	auto weight = omok::rule::check::weight(board, current_pos, get_player_turn());
+	std::wcout << L" weight : " << std::setw(4) << weight << L"      \n";
 }
 
 void framework::draw_help() const

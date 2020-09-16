@@ -21,6 +21,8 @@ public:
 	bool initialize();
 	
 	bool check_exit() const;
+	bool check_game_end() const;
+
 	bool input();
 	void process_arrow_key();
 	void process_enter_key();
@@ -59,5 +61,6 @@ private:
 	std::unique_ptr<omok::player> player[2];
 	uint8_t turn = 0;
 
+	omok::state winner = omok::state::unknowun;
 	bool exit = false;
 };

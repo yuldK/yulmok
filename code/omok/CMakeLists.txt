@@ -15,6 +15,12 @@ add_sources(${target}
 )
 
 add_sources(${target}
+	"rule"
+	"rule.cpp"
+	"rule.h"
+)
+
+add_sources(${target}
 	"Header Files"
 	"hint.h"
 	"rule.h"

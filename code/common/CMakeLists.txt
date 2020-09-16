@@ -10,6 +10,7 @@ add_sources(${target}
 
 add_sources(${target}
 	"Header Files"
+	"bit_op.h"
 	"common.h"
 	"group.h"
 	"console_util.h"

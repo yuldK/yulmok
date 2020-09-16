@@ -27,6 +27,8 @@ int main()
 
 		Sleep(10);
 	}
-	
+
+	::system("pause");
+
 	return 0;
 }
