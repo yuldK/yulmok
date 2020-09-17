@@ -1,6 +1,4 @@
 #pragma once
-#include <cstdint>
-#include "common/group.h"
 #include "coord.h"
 #include "board.h"
 
@@ -18,8 +16,13 @@ namespace omok
 		operator state() const { return my_state; }
 		bool is_turn(state type) const { return type == my_state; }
 
+	public:
+		coord recommand();
+
 	private:
 		state my_state;
 		board my_board;
+
+		coord rocommand_pos = omok::coord{ -1, -1 };
 	};
 }

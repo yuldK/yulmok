@@ -278,6 +278,9 @@ void framework::draw_info() const
 
 	auto weight = omok::rule::check::weight(board, current_pos, get_player_turn());
 	std::wcout << L" weight : " << std::setw(4) << weight << L"      \n";
+
+	auto recommand = player[get_player_turn() == omok::state::white ? 1 : 0]->recommand();
+	std::wcout << L" recommand : (" << recommand.x - current_pos.x << ", "<< recommand.y - current_pos.y << L")      \n";
 }
 
 void framework::draw_help() const
@@ -321,10 +324,10 @@ wchar_t framework::get_object_icon(omok::coord pos) const
 
 wchar_t framework::get_object_icon(omok::coord pos, omok::state state) const
 {
-	static constexpr auto left = 0;
-	static constexpr auto right = omok::omok_width - 1;
-	static constexpr auto top = 0;
-	static constexpr auto bottom = omok::omok_height - 1;
+	constexpr auto left = 0;
+	constexpr auto right = omok::omok_width - 1;
+	constexpr auto top = 0;
+	constexpr auto bottom = omok::omok_height - 1;
 
 	bool isFocus = pos == current_pos;
 

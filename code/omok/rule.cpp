@@ -20,11 +20,23 @@ namespace omok::rule
 	weight_t my_weight_state_4 = 500;
 	weight_t my_weight_state_5 = 10'000;
 
-	weight_t opponent_weight_state_1 = 1;
+	weight_t my_block_weight_state_1 = 3;
+	weight_t my_block_weight_state_2 = 15;
+	weight_t my_block_weight_state_3 = 50;
+	weight_t my_block_weight_state_4 = 300;
+	weight_t my_block_weight_state_5 = 10'000;
+
+	weight_t opponent_weight_state_1 = 2;
 	weight_t opponent_weight_state_2 = 15;
 	weight_t opponent_weight_state_3 = 70;
-	weight_t opponent_weight_state_4 = 300;
+	weight_t opponent_weight_state_4 = 400;
 	weight_t opponent_weight_state_5 = 2'000;
+
+	weight_t opponent_block_weight_state_1 = 1;
+	weight_t opponent_block_weight_state_2 = 10;
+	weight_t opponent_block_weight_state_3 = 35;
+	weight_t opponent_block_weight_state_4 = 250;
+	weight_t opponent_block_weight_state_5 = 2'000;
 
 	weight_t do_not_put_this = std::numeric_limits<weight_t>::max();
 
@@ -94,6 +106,32 @@ namespace omok::rule
 			{
 				weight += func(state, my_weight_state_5, turn);
 				weight += func(state, opponent_weight_state_5, opponent);
+			}
+
+			for (const auto& state : hint::block_state_1)
+			{
+				weight += func(state, my_block_weight_state_1, turn);
+				weight += func(state, opponent_block_weight_state_1, opponent);
+			}
+			for (const auto& state : hint::block_state_2)
+			{
+				weight += func(state, my_block_weight_state_2, turn);
+				weight += func(state, opponent_block_weight_state_2, opponent);
+			}
+			for (const auto& state : hint::block_state_3)
+			{
+				weight += func(state, my_block_weight_state_3, turn);
+				weight += func(state, opponent_block_weight_state_3, opponent);
+			}
+			for (const auto& state : hint::block_state_4)
+			{
+				weight += func(state, my_block_weight_state_4, turn);
+				weight += func(state, opponent_block_weight_state_4, opponent);
+			}
+			for (const auto& state : hint::block_state_5)
+			{
+				weight += func(state, my_block_weight_state_5, turn);
+				weight += func(state, opponent_block_weight_state_5, opponent);
 			}
 
 			return weight;
