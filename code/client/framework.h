@@ -9,6 +9,7 @@ enum class key_state_t
 	clear,
 	enter,
 	cancel,
+	redo,
 	exit
 };
 

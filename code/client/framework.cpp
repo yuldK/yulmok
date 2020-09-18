@@ -65,12 +65,19 @@ bool framework::check_exit() const
 
 bool framework::check_game_end() const
 {
-
-	return false;
+	return (winner != omok::state::unknowun);
 }
 
 bool framework::input()
 {
+	if (player[0]->is_turn(get_player_turn()) == false
+		&& check_game_end() == false)
+	{
+		if (key_state == key_state_t::cancel)
+			process_cancel_key();
+
+		return true;
+	}
 	key_state = key_state_t::none;
 
 	if (::_kbhit() == false)
@@ -118,15 +125,16 @@ void framework::process_arrow_key()
 	using std::cout;
 	using std::endl;
 
+	int key = _getch();
+
+	// 게임이 끝난 상태인 경우 생략
+	if (check_game_end())
+		return;
+
 	prev_pos = current_pos;
 
 	auto& x = current_pos.x;
 	auto& y = current_pos.y;
-
-	int key = _getch();
-
-//	if (!player[0]->is_turn(get_player_turn()))
-//		return;
 
 	switch (key)
 	{
@@ -152,6 +160,13 @@ void framework::process_arrow_key()
 void framework::process_enter_key()
 {
 	key_state = key_state_t::enter;
+
+	// 게임 나가기 기능
+	if (check_game_end())
+	{
+		exit = true;
+		return;
+	}
 
 	auto state = get_player_turn();
 
@@ -179,6 +194,9 @@ void framework::process_cancel_key()
 {
 	key_state = key_state_t::cancel;
 
+//	if (check_game_end())
+//		return;
+
 	if (history.empty()) return;
 
 	auto pos = history.top();
@@ -193,12 +211,18 @@ void framework::process_cancel_key()
 	player[0]->get(omok::state::space, current_pos);
 	player[1]->get(omok::state::space, current_pos);
 
-	turn--;
+	if (check_game_end())
+		winner = omok::state::unknowun;
+	else
+		turn--;
 }
 
 void framework::process_redo_key()
 {
-	key_state = key_state_t::cancel;
+	key_state = key_state_t::redo;
+
+	if (check_game_end())
+		return;
 
 	if (undo_stack.empty()) return;
 
@@ -227,8 +251,35 @@ void framework::process_exit_key()
 
 void framework::update()
 {
-	if (winner != omok::state::unknowun)
-		exit = true;
+//	if (winner != omok::state::unknowun)
+//		exit = true;
+
+	if (check_game_end())
+		return;
+
+	if (player[0]->is_turn(get_player_turn()) == false
+		&& key_state != key_state_t::cancel)
+	{
+		prev_pos = current_pos;
+		current_pos = player[1]->recommand();
+
+		omok::state state = *player[1];
+
+		board.put(state, current_pos);
+		player[0]->get(state, current_pos);
+		player[1]->get(state, current_pos);
+
+		history.push(current_pos);
+		undo_stack = decltype(undo_stack){};
+
+		if (omok::rule::check::win(board, state))
+		{
+			winner = state;
+			return;
+		}
+
+		turn++;
+	}
 }
 
 void framework::draw(bool draw_all, bool redraw) const
