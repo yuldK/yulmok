@@ -60,7 +60,6 @@ namespace omok
 
 		state operator[](coord::super_type coord) const
 		{
-			if (coord.max_dimension() != 2) return state::unknowun;
 			return get(omok::coord{ coord.get(0), coord.get(1) });
 		}
 

@@ -1,8 +1,7 @@
 #pragma once
 
-#include "hint.h"
-#include "board.h"
 #include "rule.h"
+#include <limits>
 
 namespace
 {

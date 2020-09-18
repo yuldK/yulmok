@@ -199,12 +199,13 @@ void framework::process_cancel_key()
 
 	if (history.empty()) return;
 
-	auto pos = history.top();
-	history.pop();
-	undo_stack.push(pos);
+	const auto& pos = history.top();
 
 	prev_pos = current_pos;
 	current_pos = pos;
+
+	undo_stack.push(pos);
+	history.pop();
 
 	board.undo(current_pos);
 
@@ -300,9 +301,9 @@ void framework::draw(bool draw_all, bool redraw) const
 		return;
 	}
 
-	for (omok::coord_type y = 0; y < omok::omok_height; ++y)
+	for (omok::coord_type::value_type y = 0; y < omok::omok_height; ++y)
 		for (omok::coord_type x = 0; x < omok::omok_width; ++x)
-			draw(omok::coord{ x, y });
+			draw((x, y));
 
 	draw_help();
 }
