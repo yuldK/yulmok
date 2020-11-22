@@ -12,5 +12,8 @@ namespace omok::rule
 namespace omok::rule::check
 {
 	weight_t weight(const board& board, const coord& pos, state turn);
+	
 	bool win(const board& board, state turn);
+	
+	bool multiple_3_point(const board& board, const coord& pos, state turn);
 }

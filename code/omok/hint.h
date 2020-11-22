@@ -14,6 +14,8 @@ namespace omok::hint
 		B = 0b1'01,	// 벽 또는 상대 돌					| block
 	};
 
+	//TODO : N 또는 O가 끝에 있을 땐 무조건 그 옆의 조건은 S여야 한다
+
 	// since cpp 14
 	template<int8_t size>
 	constexpr int8_t start_offset(const state(&arr)[size])
@@ -22,13 +24,15 @@ namespace omok::hint
 		return -1;
 	}
 
-	constexpr state state_win[]
+	using hint_t = state[7];
+
+	constexpr hint_t state_win
 	{
 		W, O, O, O, O, O, W
 	};
 
 	// free
-	constexpr state state_1[][7]
+	constexpr hint_t state_1[]
 	{
 		{ S, N, S, S, S, S, W },
 		{ W, S, N, S, S, S, W },
@@ -37,137 +41,137 @@ namespace omok::hint
 		{ W, S, S, S, S, N, S }
 	};
 
-	constexpr state state_2[][7]
+	constexpr hint_t state_2[]
 	{
-		{ W, O, S, S, S, N, S },
+		{ W, O, S, S, S, N, W },
 
-		{ W, O, S, S, N, S, W },
+		{ S, O, S, S, N, S, W },
 		{ W, S, O, S, S, N, S },
 
-		{ W, O, S, N, S, S, W },
+		{ S, O, S, N, S, S, W },
 		{ W, S, O, S, N, S, W },
 		{ W, S, S, O, S, N, S },
 
-		{ W, O, N, S, S, S, W },
+		{ S, O, N, S, S, S, W },
 		{ W, S, O, N, S, S, W },
 		{ W, S, S, O, N, S, W },
 		{ W, S, S, S, O, N, S },
 
 
 
-		{ S, N, S, S, S, O, W },
+		{ W, N, S, S, S, O, W },
 
 		{ S, N, S, S, O, S, W },
-		{ W, S, N, S, S, O, W },
+		{ W, S, N, S, S, O, S },
 
 		{ S, N, S, O, S, S, W },
 		{ W, S, N, S, O, S, W },
-		{ W, S, S, N, S, O, W },
+		{ W, S, S, N, S, O, S },
 
 		{ S, N, O, S, S, S, W },
 		{ W, S, N, O, S, S, W },
 		{ W, S, S, N, O, S, W },
-		{ W, S, S, S, N, O, W },
+		{ W, S, S, S, N, O, S },
 	};
 
-	constexpr state state_3[][7]
+	constexpr hint_t state_3[]
 	{
-		{ W, O, O, S, S, N, S },
+		{ W, O, O, S, S, N, W },
 
-		{ W, O, O, S, N, S, W },
+		{ S, O, O, S, N, S, W },
 		{ W, S, O, O, S, N, S },
 
-		{ W, O, O, N, S, S, W },
+		{ S, O, O, N, S, S, W },
 		{ W, S, O, O, N, S, W },
 		{ W, S, S, O, O, N, S },
 
 
-		{ W, O, S, O, S, N, S },
+		{ W, O, S, O, S, N, W },
 
-		{ W, O, S, O, N, S, W },
+		{ S, O, S, O, N, S, W },
 		{ W, S, O, S, O, N, S },
 
 
-		{ W, O, S, S, O, N, S },
+		{ W, O, S, S, O, N, W },
 
 
 
 		{ W, O, N, S, S, O, W },
 
-		{ W, O, N, S, O, S, W },
-		{ W, S, O, N, S, O, W },
+		{ S, O, N, S, O, S, W },
+		{ W, S, O, N, S, O, S },
 
-		{ W, O, N, O, S, S, W },
+		{ S, O, N, O, S, S, W },
 		{ W, S, O, N, O, S, W },
-		{ W, S, S, O, N, O, W },
+		{ W, S, S, O, N, O, S },
 
 
 		{ W, O, S, N, S, O, W },
 
-		{ W, O, S, N, O, S, W },
-		{ W, S, O, S, N, O, W },
+		{ S, O, S, N, O, S, W },
+		{ W, S, O, S, N, O, S },
 
 
 		{ W, O, S, S, N, O, W },
 
 
 
-		{ S, N, O, S, S, O, W },
+		{ W, N, O, S, S, O, W },
 
 		{ S, N, O, S, O, S, W },
-		{ W, S, N, O, S, O, W },
+		{ W, S, N, O, S, O, S },
 
 		{ S, N, O, O, S, S, W },
 		{ W, S, N, O, O, S, W },
-		{ W, S, S, N, O, O, W },
+		{ W, S, S, N, O, O, S },
 
 
-		{ S, N, S, O, S, O, W },
+		{ W, N, S, O, S, O, W },
 
 		{ S, N, S, O, O, S, W },
-		{ W, S, N, S, O, O, W },
+		{ W, S, N, S, O, O, S },
 
 
-		{ S, N, S, S, O, O, W },
+		{ W, N, S, S, O, O, W },
 	};
 
-	constexpr state state_4[][7]
+	constexpr hint_t state_4[]
 	{
 		{ S, N, O, O, O, S, W },
-		{ S, N, O, O, S, O, W },
-		{ S, N, O, S, O, O, W },
-		{ S, N, S, O, O, O, W },
-		{ W, S, N, O, O, O, W },
+		{ W, N, O, O, S, O, W },
+		{ W, N, O, S, O, O, W },
+		{ W, N, S, O, O, O, W },
+		{ W, S, N, O, O, O, S },
 
-		{ W, O, N, O, O, S, W },
+		{ S, O, N, O, O, S, W },
 		{ W, O, N, O, S, O, W },
 		{ W, O, N, S, O, O, W },
 		{ W, O, S, N, O, O, W },
-		{ W, S, O, N, O, O, W },
+		{ W, S, O, N, O, O, S },
 
-		{ W, O, O, N, O, S, W },
+		{ S, O, O, N, O, S, W },
 		{ W, O, O, N, S, O, W },
 		{ W, O, O, S, N, O, W },
 		{ W, O, S, O, N, O, W },
-		{ W, S, O, O, N, O, W },
+		{ W, S, O, O, N, O, S },
 
-		{ W, O, O, O, N, S, W },
-		{ W, O, O, O, S, N, S },
-		{ W, O, O, S, O, N, S },
-		{ W, O, S, O, O, N, S },
+		{ S, O, O, O, N, S, W },
+		{ W, O, O, O, S, N, W },
+		{ W, O, O, S, O, N, W },
+		{ W, O, S, O, O, N, W },
 		{ W, S, O, O, O, N, S },
 	};
 
-	constexpr state state_5[][7]
+	constexpr hint_t state_5[]
 	{
-		{ S, N, O, O, O, O, W },
+		{ W, N, O, O, O, O, W },
 		{ W, O, N, O, O, O, W },
 		{ W, O, O, N, O, O, W },
 		{ W, O, O, O, N, O, W },
-		{ W, O, O, O, O, N, S }
+		{ W, O, O, O, O, N, W }
 	};
 
-	constexpr state state_6[][6]
+	constexpr hint_t state_6[]
 	{
 		{ O, N, O, O, O, O },
 		{ O, O, N, O, O, O },
@@ -181,59 +185,72 @@ namespace omok::hint
 		{ O, O, O, O, N, O },
 	};
 
-	constexpr state block_state_1[][7]
+	constexpr hint_t block_state_1[]
 	{
 		{ B, N, S, S, S, S, W },
 		{ W, S, S, S, S, N, B }
 	};
 
-	constexpr state block_state_2[][7]
+	constexpr hint_t block_state_2[]
 	{
-		{ W, O, S, S, S, N, B },
+		{ B, O, S, S, N, S, W },
+		{ B, O, S, N, S, S, W },
+		{ B, O, N, S, S, S, W },
 		{ W, S, O, S, S, N, B },
 		{ W, S, S, O, S, N, B },
 		{ W, S, S, S, O, N, B },
 
-		{ B, N, S, S, S, O, W },
+		{ W, S, N, S, S, O, B },
+		{ W, S, S, N, S, O, B },
+		{ W, S, S, S, N, O, B },
 		{ B, N, S, S, O, S, W },
 		{ B, N, S, O, S, S, W },
 		{ B, N, O, S, S, S, W },
 	};
 
-	constexpr state block_state_4[][7]
+	constexpr hint_t block_state_3[]
+	{
+		{ W, S, O, O, S, N, B },
+		{ W, S, S, O, O, N, B },
+		{ W, S, O, S, O, N, B },
+
+		{ W, S, N, O, S, O, B },
+		{ W, S, N, S, O, O, B },
+		{ W, S, O, N, S, O, B },
+		{ W, S, S, N, O, O, B },
+		{ W, S, O, S, N, O, B },
+		{ W, S, S, O, N, O, B },
+
+
+		{ B, N, O, S, O, S, W },
+		{ B, N, O, O, S, S, W },
+		{ B, N, S, O, O, S, W },
+
+		{ B, O, O, S, N, S, W },
+		{ B, O, S, O, N, S, W },
+		{ B, O, O, N, S, S, W },
+		{ B, O, S, N, O, S, W },
+		{ B, O, N, O, S, S, W },
+		{ B, O, N, S, O, S, W },
+	};
+
+	constexpr hint_t block_state_4[]
 	{
 		{ B, N, O, O, O, S, W },
 		{ B, N, O, O, S, O, W },
 		{ B, N, O, S, O, O, W },
 		{ B, N, S, O, O, O, W },
+		{ B, O, O, O, N, S, W },
+		{ B, O, O, N, O, S, W },
+		{ B, O, N, O, O, S, W },
 
 		{ W, O, O, O, S, N, B },
 		{ W, O, O, S, O, N, B },
 		{ W, O, S, O, O, N, B },
 		{ W, S, O, O, O, N, B },
-	};
-
-	constexpr state block_state_3[][7]
-	{
-		{ W, O, O, S, S, N, B },
-		{ W, S, O, O, S, N, B },
-		{ W, S, S, O, O, N, B },
-		{ W, O, S, O, S, N, B },
-		{ W, S, O, S, O, N, B },
-		{ W, O, S, S, O, N, B },
-
-		{ B, N, O, S, S, O, W },
-		{ B, N, O, S, O, S, W },
-		{ B, N, O, O, S, S, W },
-		{ B, N, S, O, S, O, W },
-		{ B, N, S, O, O, S, W },
-		{ B, N, S, S, O, O, W },
-	};
-
-	constexpr state block_state_5[][7]
-	{
-		{ B, N, O, O, O, O, W },
-		{ W, O, O, O, O, N, B }
+		{ W, S, O, O, N, O, B },
+		{ W, S, O, N, O, O, B },
+		{ W, S, N, O, O, O, B },
 	};
 
 }

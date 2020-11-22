@@ -45,26 +45,37 @@ namespace omok
 		std::map<rule::weight_t, std::vector<coord>> recommands;
 
 		std::mutex lock;
-		std::vector<coord> elem;
+		std::vector<pos_type> elem;
 
 		for (pos_type x = 0; x < omok_width; ++x)
-			for (pos_type y = 0; y < omok_height; ++y)
-				elem.emplace_back(x, y);
+				elem.emplace_back(x);
 
 		std::for_each
 		(
 			std::execution::par_unseq,
 			elem.begin(),
 			elem.end(),
-			[&](const coord& pos)
+			[&](pos_type x)
 			{
-				if (my_board[pos] != state::space)
-					return;
+				std::array<rule::weight_t, omok_height> temp;
+				for (pos_type y = 0; y < omok_height; ++y)
+				{
+					coord pos{ x, y };
+					if (my_board[pos] != state::space) continue;
+					if (omok::rule::check::multiple_3_point(my_board, pos, my_state)) continue;
 
-				rule::weight_t value = rule::check::weight(my_board, pos, my_state);
+					temp[y] = rule::check::weight(my_board, pos, my_state);
+				}
+
 				std::lock_guard<std::mutex> lock_guard{ lock };
 
-				recommands[value].emplace_back(pos);
+				for (pos_type y = 0; y < omok_height; ++y)
+				{
+					coord pos{ x, y };
+					if (my_board[pos] != state::space) continue;
+					if (temp[y] == 0) continue;
+					recommands[temp[y]].emplace_back(std::move(pos));
+				}
 			}
 		);
 

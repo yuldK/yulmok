@@ -170,6 +170,9 @@ void framework::process_enter_key()
 
 	auto state = get_player_turn();
 
+	if (omok::rule::check::multiple_3_point(board, current_pos, state))
+		return;
+
 	prev_pos = current_pos;
 
 	if (board.put(state, current_pos) == false)
@@ -227,14 +230,14 @@ void framework::process_redo_key()
 
 	if (undo_stack.empty()) return;
 
-	auto pos = undo_stack.top();
+	auto&& pos = undo_stack.top();
 	undo_stack.pop();
 	history.push(pos);
 
-	auto state = get_player_turn();
-
 	prev_pos = current_pos;
 	current_pos = pos;
+
+	auto state = get_player_turn();
 
 	board.put(state, current_pos);
 
