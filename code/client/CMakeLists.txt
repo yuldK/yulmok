@@ -6,7 +6,7 @@ make_executable(${target} "CONSOLE")
 add_pch(${target} pch.cpp pch.h) 
 
 add_sources(${target}
-	"Source Files"
+	"main"
 	"main.cpp"
 )
 
